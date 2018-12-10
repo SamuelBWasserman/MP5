@@ -46,10 +46,25 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
 Kalman 2D 
 '''
 def kalman2d_adv_shoot(ux, uy, ox, oy, reset=False):
-    decision = (0, 0, False)
-    #
+    global ctl_obs_list
+    # Reset internal data in the first iteration
+    if reset is True:
+        ctl_obs_list = []
+
+    # Append the current ux, uy, ox, oy to the global list of previous controls and states
     ctl_obs_list .append([ux, uy, ox, oy])
-    (ex, ey) = kalman2d(ctl_obs_list)
-    return decision
+
+    # Use kalman filter to estimate x and y for each iteration
+    # estimate list is of the form [[ex, ey], [ex1, ey1] ,..., [exn, eyn]]
+    estimate_list = kalman2d(ctl_obs_list)
+
+    n = len(estimate_list)
+    # Fire once there have been at least 150 iterations
+    if n > 150:
+        decision = (estimate_list[n][0], estimate_list[n][1], True)
+        return decision
+    else:
+        decision = (estimate_list[n][0], estimate_list[n][1], False)
+        return decision
 
 
