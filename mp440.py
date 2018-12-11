@@ -1,5 +1,6 @@
 import inspect
 import sys
+import numpy as np
 
 # List used to store previous controls and states
 ctl_obs_list = []
@@ -20,6 +21,68 @@ def kalman2d(data):
     # You should remove _raise_not_defined() after you complete your code
     # Your code ends here 
     _raise_not_defined()
+    # define coefficients
+    A = np.identity(2)
+    B = np.identity(2)
+    H = np.identity(2)
+
+    # define noise covarience matrices
+    Q = np.array([[0.0010, 0.00002],[0.00002, 0.0010]])
+    R = np.array([[0.10, 0.005],[0.005, 0.02]])
+
+    # set initial P matrix and initial position
+    lamb = 1.0
+    x_prev = np.zeros((2,))
+    P_prev = lamb*np.identity(2)
+    u_prev = np.zeros((2,))
+
+    # time update
+    def time_update(x_prev, u_prev, p_prev):
+        """ Makes predictions for the kth state and covariance
+        Args:
+            x_prev: The k-1th state estimate
+            u_prev: The k-1th control
+            p_prev: The k-1th covariance matrix 
+        Returns:
+            (x_pred, x_var): The predicted kth state and covariance matrix
+        """
+        # prediction
+        x_pred = A*x_prev + B*u_prev
+        x_var = H*p_prev*np.transpose(H) + Q
+        return (x_pred, x_var)
+
+    # measurement update
+    def measurement_update(x_pred, x_var, z_k):
+        """ Computes the updated state estimate x_hat and the updated covariance matrix P(here p_k)
+        Args:
+            x_hat: The state prediction
+            x_var: The covariance predicition
+            z_k: The observation/measurement
+        Returns:
+            (x_hat, p_k): A tuple that has state estimate at k and updated error covriance
+        """
+        # Kalman gain
+        K_k = (x_var*np.transpose(H))/(H*x_var*np.transpose(H)+R)
+
+        # measurement
+        x_hat = x_pred + K_k*(z_k - H*x_pred)
+        p_k = (np.identity(2) - K_k*H)*x_var
+        return (x_hat, p_k)
+
+    # loop through data
+    for d in data:
+        # do the time update
+        (x_pred, x_var) = time_update(x_prev, u_prev, P_prev)
+
+        # store previous control
+        u_prev = np.array([d[0], d[1]])
+
+        # do the measurement update and store the state and variance
+        (x_prev, P_prev) = measurement_update(x_pred, x_var, np.array([d[2], d[3]]))
+
+        # add the state to the list
+        estimated.append(x_prev.tolist())
+        
     return estimated
 
 '''
