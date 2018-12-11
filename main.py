@@ -192,7 +192,7 @@ if __name__ == "__main__":
     data = _load_data()
     output = mp.kalman2d(data)
     print output
-    # mp.plot(data, output)
+    mp.plot(data, output)
 
     # This is for part b of the MP. Uncomment when you work on this part of the MP
 

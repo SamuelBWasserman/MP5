@@ -1,6 +1,7 @@
 import inspect
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 # List used to store previous controls and states
 ctl_obs_list = []
@@ -28,7 +29,7 @@ def kalman2d(data):
     R = np.array([[0.10, 0.005],[0.005, 0.02]])
 
     # set initial P matrix and initial position
-    lamb = 0.02
+    lamb = 0.20
     x_prev = np.zeros((2,))
     P_prev = lamb*np.identity(2)
     u_prev = np.zeros((2,))
@@ -45,14 +46,14 @@ def kalman2d(data):
         """
         # prediction
         x_pred = np.matmul(A, x_prev) + np.matmul(B, u_prev)
-        x_var = np.matmul(np.matmul(H, p_prev), np.transpose(H)) + Q
+        x_var = np.matmul(np.matmul(A, p_prev), np.transpose(A)) + Q
         return (x_pred, x_var)
 
     # measurement update
     def measurement_update(x_pred, x_var, z_k):
         """ Computes the updated state estimate x_hat and the updated covariance matrix P(here p_k)
         Args:
-            x_hat: The state prediction
+            x_pred: The state prediction
             x_var: The covariance predicition
             z_k: The observation/measurement
         Returns:
@@ -62,7 +63,7 @@ def kalman2d(data):
         K_k = (np.matmul(x_var, np.transpose(H)))/(np.matmul(np.matmul(H, x_var), np.transpose(H)) + R)
 
         # measurement
-        x_hat = x_pred + np.matmul(K_k, (z_k - np.matmul(H, x_pred)))
+        x_hat = x_pred + np.matmul(K_k, z_k - np.matmul(H, x_pred))
         p_k = np.matmul(np.identity(2) - np.matmul(K_k, H), x_var)
         return (x_hat, p_k)
 
@@ -86,10 +87,26 @@ def kalman2d(data):
 Plotting
 '''
 def plot(data, output):
-    # Your code starts here 
-    # You should remove _raise_not_defined() after you complete your code
-    # Your code ends here 
-    _raise_not_defined()
+    # coordinates to plot
+    observed_x = list()
+    observed_y = list()
+    estimated_x = list()
+    estimated_y = list()
+
+    # add coordinates to list
+    for d in data:
+        observed_x.append(d[2])
+        observed_y.append(d[3])
+
+    for o in output:
+        estimated_x.append(o[0])
+        estimated_y.append(o[1])
+
+    # plot observed and estimated data
+    plt.plot(observed_x, observed_y, 'bo', linestyle='solid', label='observed')
+    plt.plot(estimated_x, estimated_y, 'ro', linestyle='solid', label='estimated')
+    plt.show()
+
     return
 
 '''
@@ -99,10 +116,10 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
     global ctl_obs_list
     # Reset internal data in the first iteration
     if reset is True:
-        ctl_obs_list = []
+        ctl_obs_list = list()
 
     # Append the current ux, uy, ox, oy to the global list of previous controls and states
-    ctl_obs_list .append([ux, uy, ox, oy])
+    ctl_obs_list.append([ux, uy, ox, oy])
 
     # Use kalman filter to estimate x and y for each iteration
     # estimate list is of the form [[ex, ey], [ex1, ey1] ,..., [exn, eyn]]
@@ -110,7 +127,7 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
 
     n = len(estimate_list)
     # Fire once there have been at least 150 iterations
-    if n > 5:
+    if n > 15:
         print estimate_list
         decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], True)
         return decision
