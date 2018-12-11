@@ -17,10 +17,7 @@ Kalman 2D
 '''
 def kalman2d(data):
     estimated = []
-    # Your code starts here 
-    # You should remove _raise_not_defined() after you complete your code
-    # Your code ends here 
-    _raise_not_defined()
+    
     # define coefficients
     A = np.identity(2)
     B = np.identity(2)
@@ -47,8 +44,8 @@ def kalman2d(data):
             (x_pred, x_var): The predicted kth state and covariance matrix
         """
         # prediction
-        x_pred = A*x_prev + B*u_prev
-        x_var = H*p_prev*np.transpose(H) + Q
+        x_pred = np.matmul(A, x_prev) + np.matmul(B, u_prev)
+        x_var = np.matmul(np.matmul(H, p_prev), np.transpose(H)) + Q
         return (x_pred, x_var)
 
     # measurement update
@@ -62,11 +59,11 @@ def kalman2d(data):
             (x_hat, p_k): A tuple that has state estimate at k and updated error covriance
         """
         # Kalman gain
-        K_k = (x_var*np.transpose(H))/(H*x_var*np.transpose(H)+R)
+        K_k = (np.matmul(x_var, np.transpose(H)))/(np.matmul(np.matmul(H, x_var), np.transpose(H)) + R)
 
         # measurement
-        x_hat = x_pred + K_k*(z_k - H*x_pred)
-        p_k = (np.identity(2) - K_k*H)*x_var
+        x_hat = x_pred + np.matmul(K_k, (z_k - np.matmul(H, x_pred)))
+        p_k = np.matmul(np.identity(2) - np.matmul(K_k, H), x_var)
         return (x_hat, p_k)
 
     # loop through data
