@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 # List used to store previous controls and states
 ctl_obs_list = []
-average_err = 0
+err_list = []
 
 '''
 Raise a "not defined" exception as a reminder 
@@ -130,17 +130,17 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
     n = len(estimate_list)
 
     # Error is the observed x - estimate x
-    if n < 2:
-        average_err = ox - estimate_list[n - 1][0]
-    else:
-        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
+    err_list.append(abs(ox - estimate_list[n - 1][0]))
+    average_err = sum(err_list) / len(err_list)
+    error = ox - estimate_list[n - 1][0]
 
     # Fire once the avg error is converging
-    if average_err < 8:
+    if n > 20:
         print "FIRING"
-        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], True)
+        decision = (estimate_list[n - 1][0] + error, estimate_list[n - 1][1], True)
         return decision
     else:
+        print "Error: " + str(error)
         print "AVG ERR: " + str(average_err)
         decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], False)
         print decision
@@ -167,16 +167,17 @@ def kalman2d_adv_shoot(ux, uy, ox, oy, reset=False):
     n = len(estimate_list)
 
     # Error is the observed x - estimate x
-    if n < 2:
-        average_err = ox - estimate_list[n - 1][0]
-    else:
-        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
+    err_list.append(abs(ox - estimate_list[n - 1][0]))
+    average_err = sum(err_list) / len(err_list)
+    error = ox - estimate_list[n - 1][0]
 
     # Fire once the avg error is converging
-    if average_err < 8:
-        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], True)
+    if n > 10:
+        print "FIRING"
+        decision = (estimate_list[n - 1][0] + error, estimate_list[n - 1][1], True)
         return decision
     else:
+        print "Error: " + str(error)
         print "AVG ERR: " + str(average_err)
         decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], False)
         print decision
