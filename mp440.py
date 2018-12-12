@@ -29,7 +29,7 @@ def kalman2d(data):
     R = np.array([[0.10, 0.005],[0.005, 0.02]])
 
     # set initial P matrix and initial position
-    lamb = 0.20
+    lamb = 0.30
     x_prev = np.zeros((2,))
     P_prev = lamb*np.identity(2)
     u_prev = np.zeros((2,))
@@ -127,7 +127,7 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
 
     n = len(estimate_list)
     # Fire once there have been at least 150 iterations
-    if n > 15:
+    if n > 20:
         print estimate_list
         decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], True)
         return decision
@@ -155,7 +155,7 @@ def kalman2d_adv_shoot(ux, uy, ox, oy, reset=False):
 
     n = len(estimate_list)
     # Fire once there have been at least 150 iterations
-    if n > 150:
+    if n > 10:
         decision = (estimate_list[n][0], estimate_list[n][1], True)
         return decision
     else:
