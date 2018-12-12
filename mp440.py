@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 # List used to store previous controls and states
 ctl_obs_list = []
+average_err = 0
 
 '''
 Raise a "not defined" exception as a reminder 
@@ -114,8 +115,10 @@ Kalman 2D
 '''
 def kalman2d_shoot(ux, uy, ox, oy, reset=False):
     global ctl_obs_list
+    global average_err
     # Reset internal data in the first iteration
     if reset is True:
+        average_err = 0
         ctl_obs_list = list()
 
     # Append the current ux, uy, ox, oy to the global list of previous controls and states
@@ -127,13 +130,15 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
 
     n = len(estimate_list)
     # Fire once there have been at least 150 iterations
-    if n > 20:
-        print estimate_list
-        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], True)
+    if n > 150:
+        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
+        decision = (estimate_list[n - 1][0] + average_err, estimate_list[n - 1][1], True)
         return decision
     else:
-        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], False)
-        print decision 
+        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
+        print "AVG ERR: " + str(average_err)
+        decision = (estimate_list[n - 1][0] + average_err, estimate_list[n - 1][1], False)
+        print decision
         return decision
 
 
@@ -142,8 +147,10 @@ Kalman 2D
 '''
 def kalman2d_adv_shoot(ux, uy, ox, oy, reset=False):
     global ctl_obs_list
+    global average_err
     # Reset internal data in the first iteration
     if reset is True:
+        average_err = 0
         ctl_obs_list = []
 
     # Append the current ux, uy, ox, oy to the global list of previous controls and states
@@ -155,11 +162,13 @@ def kalman2d_adv_shoot(ux, uy, ox, oy, reset=False):
 
     n = len(estimate_list)
     # Fire once there have been at least 150 iterations
-    if n > 10:
-        decision = (estimate_list[n][0], estimate_list[n][1], True)
+    if n > 50:
+        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
+        decision = (estimate_list[n][0] + average_err, estimate_list[n][1], True)
         return decision
     else:
-        decision = (estimate_list[n][0], estimate_list[n][1], False)
+        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
+        decision = (estimate_list[n][0] + average_err, estimate_list[n][1], False)
         return decision
 
 
