@@ -135,7 +135,7 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
     error = ox - estimate_list[n - 1][0]
 
     # Fire once the avg error is converging
-    if n > 20:
+    if n > 40:
         print "FIRING"
         decision = (estimate_list[n - 1][0] + error, estimate_list[n - 1][1], True)
         return decision
@@ -172,7 +172,7 @@ def kalman2d_adv_shoot(ux, uy, ox, oy, reset=False):
     error = ox - estimate_list[n - 1][0]
 
     # Fire once the avg error is converging
-    if n > 10:
+    if n > 60:
         print "FIRING"
         decision = (estimate_list[n - 1][0] + error, estimate_list[n - 1][1], True)
         return decision
