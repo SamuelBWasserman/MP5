@@ -127,17 +127,22 @@ def kalman2d_shoot(ux, uy, ox, oy, reset=False):
     # Use kalman filter to estimate x and y for each iteration
     # estimate list is of the form [[ex, ey], [ex1, ey1] ,..., [exn, eyn]]
     estimate_list = kalman2d(ctl_obs_list)
-
     n = len(estimate_list)
-    # Fire once there have been at least 150 iterations
-    if n > 150:
-        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
-        decision = (estimate_list[n - 1][0] + average_err, estimate_list[n - 1][1], True)
-        return decision
+
+    # Error is the observed x - estimate x
+    if n < 2:
+        average_err = ox - estimate_list[n - 1][0]
     else:
         average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
+
+    # Fire once the avg error is converging
+    if average_err < 8:
+        print "FIRING"
+        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], True)
+        return decision
+    else:
         print "AVG ERR: " + str(average_err)
-        decision = (estimate_list[n - 1][0] + average_err, estimate_list[n - 1][1], False)
+        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], False)
         print decision
         return decision
 
@@ -151,24 +156,28 @@ def kalman2d_adv_shoot(ux, uy, ox, oy, reset=False):
     # Reset internal data in the first iteration
     if reset is True:
         average_err = 0
-        ctl_obs_list = []
+        ctl_obs_list = list()
 
     # Append the current ux, uy, ox, oy to the global list of previous controls and states
-    ctl_obs_list .append([ux, uy, ox, oy])
+    ctl_obs_list.append([ux, uy, ox, oy])
 
     # Use kalman filter to estimate x and y for each iteration
     # estimate list is of the form [[ex, ey], [ex1, ey1] ,..., [exn, eyn]]
     estimate_list = kalman2d(ctl_obs_list)
-
     n = len(estimate_list)
-    # Fire once there have been at least 150 iterations
-    if n > 50:
-        average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
-        decision = (estimate_list[n][0] + average_err, estimate_list[n][1], True)
-        return decision
+
+    # Error is the observed x - estimate x
+    if n < 2:
+        average_err = ox - estimate_list[n - 1][0]
     else:
         average_err = (average_err + (ox - estimate_list[n - 1][0])) / 2
-        decision = (estimate_list[n][0] + average_err, estimate_list[n][1], False)
+
+    # Fire once the avg error is converging
+    if average_err < 8:
+        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], True)
         return decision
-
-
+    else:
+        print "AVG ERR: " + str(average_err)
+        decision = (estimate_list[n - 1][0], estimate_list[n - 1][1], False)
+        print decision
+        return decision
